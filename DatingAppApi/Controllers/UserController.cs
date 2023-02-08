@@ -6,20 +6,23 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using AutoMapper;
 using DatingAppApi.Helper;
+using DatingAppApi.Models;
 using DatingAppApi.Models.DTOs;
 using DatingAppApi.Models.ViewModel;
 using DatingAppApi.Repositories.Interface;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Recommendations;
 
 namespace DatingAppApi.Controllers
 {
    // [ServiceFilter(typeof(LogUserActivity))]
-    [Authorize]
     [Produces("application/json")]
     [Route("api/[controller]/[action]")]
     [ApiController]
+
     public class UserController : ControllerBase
     {
         private readonly IDataRepository _dataRepository;
@@ -32,22 +35,24 @@ namespace DatingAppApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllUser([FromQuery] UserParams userParams)
+        public async Task<IActionResult> GetAllUser(int UserId, [FromQuery] UserParams userParams)
         {
             try
             {
-                var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                var userfromrepo = await _dataRepository.GetUser(userParams.UserId);
-                userParams.UserId = currentUserId;
+            //    var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            //    var user = await _dataRepository.GetUser(currentUserId);
+            //    userParams.UserId = currentUserId;
                 if (string.IsNullOrEmpty(userParams.Gender))
                 {
-                    userParams.Gender = userfromrepo.Gender == "male" ? "female" : "male";
+                    userParams.Gender = userParams.Gender == "male" ? "female" : "male";
                 }
-                var data = await _dataRepository.GetUsers(userParams);
-                var userToReturn = _mapper.Map<IEnumerable<UserListVM>>(data);
-                Response.AddPagination(data.CurrentPage, data.PageSize, data.TotalCount, data.TotalPage);
+                
+                
+                var usr = await _dataRepository.GetUsers(userParams);
+                var userToReturn = _mapper.Map<IEnumerable<UserListVM>>(usr);
                 if (userToReturn != null)
                 {
+                    Response.AddPagination(usr.CurrentPage, usr.PageSize, usr.TotalCount, usr.TotalPages);
                     return Ok(userToReturn);
                 }
                 else
@@ -62,7 +67,7 @@ namespace DatingAppApi.Controllers
             }
         }
 
-        [HttpGet("{id}", Name ="GetUser")]
+        [HttpGet("{id}", Name = "GetUser")]
         public async Task<IActionResult> GetUserByID(int id)
         {
             try
@@ -104,5 +109,31 @@ namespace DatingAppApi.Controllers
             }
         }
 
+        [HttpPost("{id}/like/{recepientId}")]
+        public async Task<IActionResult> LikeUser(int id, int recepientId)
+        {
+            //if (id !=  int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+            //return Unauthorized();
+
+            var like = await _dataRepository.GetLike(id, recepientId);
+            if (like != null)
+            {
+                return BadRequest("You Already Like the User");
+            }
+            if (await _dataRepository.GetUser(recepientId) == null)
+            {
+                return NotFound();
+            }
+            like = new Like
+            {
+                LikerId = id,
+                LikeeId = recepientId
+            };
+            _dataRepository.Add<Like>(like);
+            if (await _dataRepository.SaveAll())
+                return Ok();
+
+            return BadRequest("Failed To Like User");
+        }
     }
 }

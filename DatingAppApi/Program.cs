@@ -13,8 +13,8 @@ namespace DatingAppApi
     {
         public static void Main(string[] args)
         {
-           var host = CreateWebHostBuilder(args).Build();
-            using( var scope = host.Services.CreateScope())
+            var host = CreateWebHostBuilder(args).Build();
+            using (var scope = host.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
                 try
@@ -27,14 +27,41 @@ namespace DatingAppApi
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
                     logger.LogError(ex, "An error occured during migration");
-                    
+
                 }
             }
-            host.Run();
+
+                host.Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>();
     }
+    //public static void Main(string[] args)
+    //    {
+    //       var host = CreateWebHostBuilder(args).Build();
+    //        using( var scope = host.Services.CreateScope())
+    //        {
+    //            var services = scope.ServiceProvider;
+    //            try
+    //            {
+    //                var context = services.GetRequiredService<DatingAppContext>();
+    //                context.Database.Migrate();
+    //                Seed.SeedUsers(context);
+    //            }
+    //            catch (System.Exception ex)
+    //            {
+    //                var logger = services.GetRequiredService<ILogger<Program>>();
+    //                logger.LogError(ex, "An error occured during migration");
+                    
+    //            }
+    //        }
+    //        host.Run();
+    //    }
+
+    //    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+    //        WebHost.CreateDefaultBuilder(args)
+    //            .UseStartup<Startup>();
+    //}
 }

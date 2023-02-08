@@ -12,12 +12,12 @@ namespace DatingAppApi.Helper
         public int TotalItems { get; set; }
         public int TotalPages { get; set; }
 
-        public PaginationHeader(int currentpage, int itemsperpage, int totalitems, int totalpage)
+        public PaginationHeader(int currentPage, int itemsPerPage, int totalItems, int totalPages)
         {
-            this.CurrentPage = currentpage;
-            this.ItemsPerPage = itemsperpage;
-            this.TotalItems = totalitems;
-            this.TotalPages = totalpage;
+            this.CurrentPage = currentPage;
+            this.ItemsPerPage = itemsPerPage;
+            this.TotalItems = totalItems;
+            this.TotalPages = totalPages;
         }
     }
 }

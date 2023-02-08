@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,7 +14,7 @@ namespace DatingAppApi.Models
         public bool IsMain { get; set; }
         public DateTime DateAdded { get; set; }
         public string PublicId { get; set; }
-        public User User { get; set; }
         public int UserId { get; set; }
-    }
+        public  User User  { get; set; }
+}
 }

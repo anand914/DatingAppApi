@@ -44,14 +44,65 @@ namespace DatingAppApi
         {
 
             var key = Encoding.ASCII.GetBytes(Configuration.GetSection("AppSettings:Token").Value);
+            //services.AddSwaggerGen(c =>
+            //{
+            //    c.SwaggerDoc("v1", new Info
+            //    {
+            //        Version = "v1",
+            //        Title = "MyAPI",
+            //        Description = "Testing"
+            //    });
+            //    c.AddSecurityDefinition("Bearer", new ApiKeyScheme()
+            //    {
+            //        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+            //        Name = "Authorization",
+            //        In = "header",
+            //        Type = "apiKey"
+            //    });
+            //    c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>>
+            //    {
+            //        { "Bearer", new string[] { } }
+            //    });
+            //});
+            ////services.AddCors(options =>
+            ////{
+            ////    options.AddPolicy("CorsPolicy", builder => builder.WithOrigins("http://localhost:4200")
+            ////        .AllowAnyHeader()
+            ////        .AllowAnyMethod()
+            ////        .AllowCredentials()
+            ////        .SetIsOriginAllowed((host) => true));
+            ////});
+            //services.AddCors(o => o.AddPolicy("AllowOrigin", builder =>
+            //{
+            //    builder.AllowAnyOrigin()
+            //           .AllowAnyMethod()
+            //           .AllowAnyHeader();
+            //}));
+            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            //services.Configure<IISOptions>(options =>
+            //{
+            //    options.ForwardClientCertificate = false;
+            //});
+            //services.AddDbContext<DatingAppContext>(Options => Options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
+            //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
+            //   AddJwtBearer(options =>
+            //   {
+            //       options.TokenValidationParameters = new TokenValidationParameters
+            //       {
+            //           ValidateIssuerSigningKey = true,
+            //           IssuerSigningKey = new SymmetricSecurityKey(key),
+            //           ValidateIssuer = false,
+            //           ValidateAudience = false
+            //       };
+            //   });
+            ////services.AddCors(c =>
+            ////{
+            ////    c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin());
+            ////});
+            ///var key = Encoding.ASCII.GetBytes(Configuration.GetSection("AppSettings:Token").Value);
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info
-                {
-                    Version = "v1",
-                    Title = "MyAPI",
-                    Description = "Testing"
-                });
+                c.SwaggerDoc("v1", new Info { Title = "Dating API", Version = "v1" });
                 c.AddSecurityDefinition("Bearer", new ApiKeyScheme()
                 {
                     Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -64,8 +115,30 @@ namespace DatingAppApi
                     { "Bearer", new string[] { } }
                 });
             });
+          
+            //services.AddHttpContextAccessor();
+            //services.AddSingleton(mapper);
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-            services.AddDbContext<DatingAppContext>(Options => Options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
+           services.AddDbContext<DatingAppContext>(Options => Options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            var corsBuilder = new CorsPolicyBuilder();
+            corsBuilder.AllowAnyHeader();
+            corsBuilder.AllowAnyMethod();
+            //string[] originUrl =
+            //{
+            //    Configuration.GetSection("BaseURI:Url").Value,
+            //};
+            //corsBuilder.WithOrigins(originUrl);
+            corsBuilder.AllowAnyOrigin();
+            corsBuilder.AllowCredentials();
+            services.AddCors(options =>
+            {
+                options.AddPolicy("SiteCorsPolicy", corsBuilder.Build());
+            });
+
+            services.Configure<MvcOptions>(options =>
+            {
+                options.Filters.Add(new CorsAuthorizationFilterFactory("SiteCorsPolicy"));
+            });
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
                AddJwtBearer(options =>
                {
@@ -77,18 +150,13 @@ namespace DatingAppApi
                        ValidateAudience = false
                    };
                });
-           // services.AddCors();
-            services.AddCors(c =>
-            {
-                c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin());
-            });
+
             services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
             services.AddAutoMapper();
             services.AddTransient<Seed>();
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IDataRepository, DataRepository>();
            // services.AddScoped<LogUserActivity>();
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -115,17 +183,18 @@ namespace DatingAppApi
                     });
                 });
             }
+            
+           // app.UseCors("CorsPolicy");
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "EmsWebAPI  V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "DatingAPI  V1");
                
                 c.DefaultModelsExpandDepth(-1);
             });
-
-            app.UseCors(x => x.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-            app.UseStaticFiles();
             app.UseAuthentication();
+            app.UseStaticFiles();
+            app.UseCors("SiteCorsPolicy");
             app.UseMvc();
         }
     }

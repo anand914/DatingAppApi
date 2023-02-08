@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace DatingAppApi.Controllers
 {
+   //[Authorize]
     [Produces("application/json")]
     [Route("api/[controller]/[action]")]
     [ApiController]
@@ -36,7 +37,7 @@ namespace DatingAppApi.Controllers
         //    try
         //    {
         //        var user = _mapper.Map<User>(model);
-        //        var result = await _authRepository.Register(user,password );
+        //        var result = await _authRepository.Register(user, password);
         //        var userToReturn = _mapper.Map<UserForDetailsVM>(user);
         //        return CreatedAtRoute("GetUser",
         //            new { controller = "User", id = result.ID }, userToReturn);
@@ -71,14 +72,13 @@ namespace DatingAppApi.Controllers
         {
             try
             {
-                var data = await _authRepository.Login(model);
+                var user = await _authRepository.Login(model);
 
-                if (data.StatusCode == 500)
+                if (user.StatusCode == 500)
                 {
-                    return StatusCode(500, data);
+                    return StatusCode(500, user);
                 }
-
-                return Ok(data);
+                return Ok(user);
             }
             catch (Exception ex)
             {

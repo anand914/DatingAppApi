@@ -77,24 +77,6 @@ namespace DatingAppApi.Repositories.Services
                 return new ApiResponse(500, false, new List<string> { ex.Message }, null, null);
             }
         }
-
-        //public async Task<UserVM> Register(UserVM model, string password)
-        //{
-
-        //    try
-        //    {
-        //        byte[] hashpassword, saltpassword;
-        //        Hashing.CreateHashPassword(password, out hashpassword, out saltpassword);
-        //        await _context.users.AddAsync(model);
-        //        await _context.SaveChangesAsync();
-        //        return model;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-
-        //}
         public async Task<User> Register(User user, string password)
         {
             byte[] hashpassword, saltpassword;
